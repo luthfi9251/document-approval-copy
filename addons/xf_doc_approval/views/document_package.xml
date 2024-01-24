@@ -8,6 +8,7 @@
                 <form>
                     <field name="is_initiator" invisible="True"/>
                     <field name="is_approver" invisible="True"/>
+                    <field name="is_proxy"/>
                     <header>
                         <button string="Send for Approval" name="action_send_for_approval" type="object" states="draft"
                                 class="oe_highlight"

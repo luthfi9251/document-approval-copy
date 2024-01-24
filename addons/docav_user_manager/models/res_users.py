@@ -24,7 +24,7 @@ class ResUsers(models.Model):
         if pegawai:
             default_user_id = pegawai.user_id.id
             pegawai.write({'user_id': new_user.id})
-            new_user.write({'groups_id': [(6, 0, [group_internal.id, group_initiator_docav.id, group_no_one.id, group_mail_template_editor.id, group_partner_manager.id, group_export.id, group_private_adress.id])]})
+            new_user.write({'groups_id': [(6, 0, [group_internal.id, pegawai.user_types.id, group_no_one.id, group_mail_template_editor.id, group_partner_manager.id, group_export.id, group_private_adress.id])]})
             delete_default_user_id = self.env['res.users'].search([('id', '=', default_user_id)], limit=1)
             if delete_default_user_id:
                 delete_default_user_id.unlink()

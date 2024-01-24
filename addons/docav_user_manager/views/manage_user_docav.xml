@@ -90,6 +90,16 @@
                             <field name="singkatan"/>
                             <field name="sekretaris"/>
                         </group>
+                        <group name="daftar_pegawai" string="Daftar Anggota">
+                            <field name="daftar_pegawai" nolabel="1" colspan="2">
+                                <tree>
+                                    <field name="full_name"/>
+                                    <field name="email"/>
+                                    <field name="user_types"/>
+                                    <field name="punya_user"/>
+                                </tree>
+                            </field>
+                        </group>
                     </sheet>
                 </form>
             </field>

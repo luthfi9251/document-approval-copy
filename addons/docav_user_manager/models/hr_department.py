@@ -25,6 +25,7 @@ class HREmployee(models.Model):
     misi_inggris = fields.Html(string="Misi Inggris")
     kode_fakultas = fields.Char(string="Kode Fakultas")
     master_department_id = fields.Many2one('docav.department', string="Master Department", readonly=True)
+    daftar_pegawai = fields.One2many(string="Pegawai", comodel_name='docav.pegawai', inverse_name='scope_kerja')
 
     @api.model
     def create(self, vals):

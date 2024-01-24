@@ -55,7 +55,7 @@ class HREmployee(models.Model):
     category_ids = fields.Char(string = "kategori")
     resource_id = fields.Many2one('resource.resource', required=False, default=False)
     name = fields.Char(string="Employee Name", required=True)
-    user_types = fields.Many2one('res.groups', string="Tipe User", compute="_compute_user_types", store=True)
+    user_types = fields.Many2one('res.groups', string="Tipe User")
 
     @api.depends("name", 'gelar_depan', 'gelar_belakang')
     def _compute_fullname(self):
@@ -85,23 +85,6 @@ class HREmployee(models.Model):
             else:
                 record.aktif = False
     
-    # @api.onchange('name')
-    # def _onchange_name(self):
-    #     if self.name and not self.resource_id:
-    #         new_resource = self.env['resource.resource'].create({'name': self.name})
-    #         self.resource_id = new_resource
-    #         if not self.user_id:
-    #             default_user =  self.env['res.users'].search([('login', '=', 'default_docav')], limit=1)
-    #             self.user_id = default_user
-    
-    # @api.onchange('resource_id')
-    # def _onchange_resouce_id(self):
-    #     pass
-
-    # def _default_user_id(self):
-    #     default_user =  self.env['res.users'].search([('login', '=', 'default_docav')], limit=1)
-    #     return default_user.id
-    
     @api.model
     def create(self, vals):
         new_resource = self.env['resource.resource'].create({'name': vals["name"]})
@@ -120,6 +103,32 @@ class HREmployee(models.Model):
         
         return pegawai
 
+    def write(self, vals):
+        result = super(HREmployee, self).write(vals)
+        if 'user_types' in vals:
+            is_default_user = True
+            if(self["user_id"]):
+                is_default_user = self["user_id"]["name"].startswith('docav')
+
+            group_user_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
+            group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_initiator')
+            group_proxy_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_proxy')
+            group_team_leader_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_team_leader')
+            group_manager_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_manager')
+
+            doc_approval_groups = [group_user_docav.id, group_initiator_docav.id, group_proxy_docav.id, group_team_leader_docav.id, group_manager_docav.id]
+
+            if not is_default_user:
+                user = self.env['res.users'].browse(self["user_id"].id)
+                user.write({'groups_id': [(3, existing_group_id, 0) for existing_group_id in doc_approval_groups]})
+                user.write({'groups_id': [(4, vals["user_types"])]})
+        return result
+
+    def unlink(self):
+        if self.user_id:
+            self.user_id.unlink()
+        return super(HREmployee, self).unlink()
+
     @api.model
     def name_search(self, name, args=None, operator='ilike', limit=100):
         args = args or []
@@ -136,14 +145,34 @@ class HREmployee(models.Model):
         group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_initiator')
         return group_initiator_docav.id
     
-    @api.depends('user_id')
-    def _compute_user_types(self):
-        group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_initiator')
-        group_user_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
-        for record in self:
-            if record["user_id"]["name"]:
-                is_default_user = record["user_id"]["name"].startswith('docav')
-                if is_default_user:
-                    record["user_types"] = group_initiator_docav.id
-            else:
-                record["user_types"] = group_user_docav.id
+    # @api.onchange('user_types')
+    # def _onchange_user_types(self):
+    #     is_default_user = False
+    #     if(self.user_id):
+    #         is_default_user = self["user_id"]["name"].startswith('docav')
+
+    #     group_user_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
+    #     group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_initiator')
+    #     group_team_leader_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_team_leader')
+    #     group_manager_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_manager')
+
+    #     doc_approval_groups = [group_user_docav.id, group_initiator_docav.id, group_team_leader_docav.id, group_manager_docav.id]
+    #     doc_approval_filtered = filter(lambda group: self.user_types.id == group, doc_approval_groups)
+
+    #     if not is_default_user:
+    #         user = self.env['res.users'].browse(self.user_id.id)
+    #         user.write({'groups_id': [(3, existing_group_id, 0) for existing_group_id in doc_approval_filtered] + [(4, self.user_types.id)]})
+    
+    
+    
+    # @api.depends('user_id')
+    # def _compute_user_types(self):
+    #     group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_initiator')
+    #     group_user_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
+    #     for record in self:
+    #         if record["user_id"]["name"]:
+    #             is_default_user = record["user_id"]["name"].startswith('docav')
+    #             if is_default_user:
+    #                 record["user_types"] = group_initiator_docav.id
+    #         else:
+    #             record["user_types"] = group_user_docav.id

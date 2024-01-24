@@ -106,6 +106,7 @@ class DocApprovalDocumentPackage(models.Model):
 
     is_initiator = fields.Boolean('Is Initiator', compute='_compute_access')
     is_approver = fields.Boolean('Is Approver', compute='_compute_access')
+    is_proxy = fields.Boolean('Is Proxy', compute='_compute_access')
     reject_reason = fields.Text('Reject Reason')
 
     # Compute fields
@@ -120,6 +121,18 @@ class DocApprovalDocumentPackage(models.Model):
             current_approvers = record.get_current_approvers()
             responsible = self.env.user in current_approvers.mapped('employee_id.user_id') or self.env.user._is_admin()
             record.is_approver = record.approval_state == 'pending' and responsible
+
+            #check if user a proxy
+            user_id = self.env.user
+            department = False
+            approvers_department_id = []
+            if user_id.has_group('xf_doc_approval.group_xf_doc_approval_proxy'):
+                employee_id = self.env["docav.pegawai"].search([("user_id","=",user_id.id)], limit=1)
+                department = employee_id.scope_kerja.id
+                if department:
+                    approvers_department_id = record.approver_ids.mapped('employee_id.scope_kerja.id')
+            record.is_proxy = department in list(approvers_department_id)
+
 
     @api.depends('approver_ids.state')
     def _compute_approval_state(self):
@@ -206,7 +219,6 @@ class DocApprovalDocumentPackage(models.Model):
 
     def get_current_approvers(self):
         self.ensure_one()
-        cetak(self.approver_ids.filtered(lambda a: a.state == 'pending' and a.step == self.approval_step))
         return self.approver_ids.filtered(lambda a: a.state == 'pending' and a.step == self.approval_step)
 
     def get_current_approver(self):

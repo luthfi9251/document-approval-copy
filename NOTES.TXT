@@ -1,0 +1,3 @@
+master_db_password=wy7t-5wwn-wdw8
+db_name=doc_approval
+client_id_oauth=492930706196-1d55d0jj5bt8q9292it2v2t8dvc5eokm.apps.googleusercontent.com

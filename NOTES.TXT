@@ -1,3 +1,50 @@
 master_db_password=wy7t-5wwn-wdw8
 db_name=doc_approval
 client_id_oauth=492930706196-1d55d0jj5bt8q9292it2v2t8dvc5eokm.apps.googleusercontent.com
+
+
+Skenario Pengujian
+Nama User dan Email
+Muhammad Luthfi Irfan   - 112202106685@mhs.dinus.ac.id		
+Fud Vlogger             - leftmenow666@gmail.com		
+Joko Susanto            - luthfi.irfan11@gmail.com		
+Robby Hairdryer         - luthfideveloper777@gmail.com		
+Ahmad Sukri             - mluthfiirfan18@gmail.com		
+Herry Kopter            - muhammadluthfiirfan@mail.ugm.ac.id
+
+List Role
+Anggota, Proxy, Non Anggota
+
+List Departement
+FIK, FEB
+
+Role Assignment
+Muhammad Luthfi Irfan   - Proxy     - FIK
+Fud Vlogger             - Anggota   - FIK
+Herry Kopter            - Anggota   - FIK
+Joko Susanto            - Proxy     - FEB
+Robby Hairdryer         - Anggota   - FEB
+Ahmad Sukri             - Non Anggota
+
+List yang perlu di cek:
+1. Apakah Proxy dapat melihat dokumen ketika seseorang mengirimkan dokumen ke user yang di departement nya ada Proxy?
+2. Apakah Proxy dari departement lain dapat melihat dokumen milik departement lainnya?
+3. Apakah Proxy hanya dapat melihat dokumen yang dikirimkan ke department nya?
+
+SKENARIO 1 - A001 : Proxy cek dokumen yang dikirim ke departemennya untuk approvers 1 department
+1. Admin (No Department) mengirim dokumen dengan approvers adalah Fud Vlogger FIK                   D
+2. Proxy FIK mengakses Dokumen Tersebut                                                             D
+3. Proxy FEB tidak dapat mengakses dokumen.                                                         D
+
+SKENARIO 2 - A002 : Proxy cek dokumen yang dikirim ke departemennya untuk approvers lebih dari 1 department
+1. Admin (No Department) mengirim dokumen dengan approvers adalah Fud Vlogger dan Robby Hairdryer   D
+2. Proxy FEB dan FIK mengakses Dokumen Tersebut                                                     D
+
+SKENARIO 3 - A003: Proxy tidak dapat mengecek dokumen di luar department
+1. Admin (No Department) mengirim dokumen dengan approvers adalah Ahmad Sukri Non-Departement       D
+2. Proxy FEB dan FIK tidak dapat mengakses Dokumen Tersebut                                         D
+
+SKENARIO 4 - A004 : Apakah proxy bisa menjadi approvers
+1. Admin (No Department) mengirim dokumen dengan approvers adalah Muhammad Luthfi Irfan FIK         D
+2. Apakah Muhammad Luthfi Irfan selaku proxy dapat approvers
+3. Apakah Robby Hairdryer selaku proxy dapat melihat dokumen                                        F 

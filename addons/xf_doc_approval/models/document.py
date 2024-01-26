@@ -103,10 +103,16 @@ class DocApprovalDocumentPackage(models.Model):
         readonly=True,
         states=_editable_states,
     )
+    proxy_user_ids = fields.Many2many(
+        string="Proxy",
+        comodel_name="docav.pegawai",
+        inverse_name='proxied_documents',
+        states=_editable_states,
+    )
 
     is_initiator = fields.Boolean('Is Initiator', compute='_compute_access')
     is_approver = fields.Boolean('Is Approver', compute='_compute_access')
-    is_proxy = fields.Boolean('Is Proxy', compute='_compute_access')
+    is_proxy = fields.Boolean('Is Proxy', compute='_compute_access', store=True)
     reject_reason = fields.Text('Reject Reason')
 
     # Compute fields
@@ -122,16 +128,17 @@ class DocApprovalDocumentPackage(models.Model):
             responsible = self.env.user in current_approvers.mapped('employee_id.user_id') or self.env.user._is_admin()
             record.is_approver = record.approval_state == 'pending' and responsible
 
-            #check if user a proxy
-            user_id = self.env.user
-            department = False
-            approvers_department_id = []
-            if user_id.has_group('xf_doc_approval.group_xf_doc_approval_proxy'):
-                employee_id = self.env["docav.pegawai"].search([("user_id","=",user_id.id)], limit=1)
-                department = employee_id.scope_kerja.id
-                if department:
-                    approvers_department_id = record.approver_ids.mapped('employee_id.scope_kerja.id')
-            record.is_proxy = department in list(approvers_department_id)
+            # #check if user a proxy
+            # user_id = self.env.user
+            # department = False
+            # approvers_department_id = []
+            # if user_id.has_group('xf_doc_approval.group_xf_doc_approval_proxy'):
+            #     employee_id = self.env["docav.pegawai"].search([("user_id","=",user_id.id)], limit=1)
+            #     department = employee_id.scope_kerja.id
+            #     if department:
+            #         approvers_department_id = record.approver_ids.mapped('employee_id.scope_kerja.id')
+            
+            record.is_proxy = self.env.user in self.proxy_user_ids.mapped('user_id')
 
 
     @api.depends('approver_ids.state')
@@ -251,6 +258,15 @@ class DocApprovalDocumentPackage(models.Model):
     def action_send_for_approval(self):
         for record in self:
             if record.state == 'draft' and record.approver_ids:
+                proxy_user = record.approver_ids.mapped('employee_id.scope_kerja.daftar_pegawai').filtered(lambda a: a.user_id.has_group('xf_doc_approval.group_xf_doc_approval_proxy'))
+                cetak("Cek department")
+                cetak(f"{proxy_user}")
+                cetak(f"{list(proxy_user)}")
+                if proxy_user:
+                    # prox = self.proxy_user_ids.browse([])
+                    # for a in proxy_user:
+                    #     prox += prox.new(a)
+                    self.proxy_user_ids = proxy_user
                 # Subscribe approvers
                 record.message_subscribe(partner_ids=record.approver_ids.mapped('employee_id.user_id').mapped('partner_id').ids)
             if record.approval_state == 'pending':

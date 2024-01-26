@@ -88,14 +88,16 @@ class HREmployee(models.Model):
     @api.model
     def create(self, vals):
         new_resource = self.env['resource.resource'].create({'name': vals["name"]})
-        group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
+        # group_initiator_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
+        # group_proxy_docav = self.env.ref('xf_doc_approval.group_xf_doc_approval_user')
         group_internal = self.env.ref('base.group_user')
         user_id_data = {
             "name": f'docav_{vals["name"]}',
             "login": f'docav_{vals["email"]}',
             "password" : "cobatebakpassnya",
-            "groups_id": [(4, group_internal.id),(4,group_initiator_docav.id)]
+            "groups_id": [(4, group_internal.id),(4,vals["user_types"])]
         }
+
         default_user =  self.env['res.users'].create(user_id_data)
         vals["resource_id"] = new_resource.id
         vals["user_id"] = default_user.id
@@ -118,10 +120,10 @@ class HREmployee(models.Model):
 
             doc_approval_groups = [group_user_docav.id, group_initiator_docav.id, group_proxy_docav.id, group_team_leader_docav.id, group_manager_docav.id]
 
-            if not is_default_user:
-                user = self.env['res.users'].browse(self["user_id"].id)
-                user.write({'groups_id': [(3, existing_group_id, 0) for existing_group_id in doc_approval_groups]})
-                user.write({'groups_id': [(4, vals["user_types"])]})
+            # if not is_default_user:
+            user = self.env['res.users'].browse(self["user_id"].id)
+            user.write({'groups_id': [(3, existing_group_id, 0) for existing_group_id in doc_approval_groups]})
+            user.write({'groups_id': [(4, vals["user_types"])]})
         return result
 
     def unlink(self):

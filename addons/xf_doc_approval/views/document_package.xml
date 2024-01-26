@@ -8,7 +8,7 @@
                 <form>
                     <field name="is_initiator" invisible="True"/>
                     <field name="is_approver" invisible="True"/>
-                    <field name="is_proxy"/>
+                    <field name="is_proxy" invisible="True"/>
                     <header>
                         <button string="Send for Approval" name="action_send_for_approval" type="object" states="draft"
                                 class="oe_highlight"
@@ -53,8 +53,8 @@
                                 <field name="kode_agenda" />
                                 <field name="tanggal_agenda" />
                                 <field name="kode_nomor_agenda" />
-                                <button string="Disposisi" type="object" name="generate_nomor_agenda" class="oe_highlight"/>
-                                <!-- <button string="Generate PDF" type="object" class="oe_highlight" name="generate_pdf"/> -->
+                                <button string="Disposisi" type="object" name="generate_nomor_agenda" class="oe_highlight" 
+                                attrs="{'invisible':[('is_proxy', '!=', True)]}"/>
                             </group>
                         </group>
 
@@ -89,8 +89,16 @@
                                 <field name="approval_step"/>
                             </group>
                         </group>
+                        <group name="proxy" string="Proxy User">
+                            <field name="proxy_user_ids" nolabel="1" colspan="2" readonly="True">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="scope_kerja"/>
+                                </tree>
+                            </field>
+                        </group>
                         <group name="approvers" string="Approvers">
-                            <field name="approver_ids" nolabel="1" colspan="2">
+                            <field name="approver_ids" nolabel="1" colspan="2" attrs="{'readonly':[('is_proxy', '!=', True)]}">
                                 <tree editable="bottom">
                                     <field name="step"/>
                                     <field name="employee_id" context="{'search_default_customer': 1}"/>

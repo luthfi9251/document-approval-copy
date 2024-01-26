@@ -49,7 +49,7 @@ class DocumentVisibility(Selection):
         ('followers', 'Followers'),
         ('approvers', 'Approvers'),
     ]
-    default = list[0][0]
+    default = list[2][0]
 
 class ApprovalStep(Selection):
     step_range = list(range(1, 21))
